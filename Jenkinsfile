@@ -1,21 +1,32 @@
 pipeline {
-  agent any
-  stages {
-    stage('Build') {
-      steps {
-        echo 'Building Docker image for SkyForge Cloud'
-        sh 'docker build -t skyforge-cloud:latest .'
-      }
+    agent any
+
+    stages {
+
+        stage('Clone Repository') {
+            steps {
+                git 'https://github.com/Fareez96/skyforge-cloud'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                bat 'docker build -t skyforge-cloud .'
+            }
+        }
+
+        stage('Stop Old Container') {
+            steps {
+                bat 'docker stop skyforge-container || exit 0'
+                bat 'docker rm skyforge-container || exit 0'
+            }
+        }
+
+        stage('Run New Container') {
+            steps {
+                bat 'docker run -d -p 8081:80 --name skyforge-container skyforge-cloud'
+            }
+        }
+
     }
-    stage('Test') {
-      steps {
-        echo 'No unit tests for static site — skipping'
-      }
-    }
-    stage('Publish') {
-      steps {
-        echo 'Publish step placeholder — configure registry/push here'
-      }
-    }
-  }
 }
